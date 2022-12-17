@@ -2,7 +2,7 @@
 
 namespace Geekbrains\Leveltwo\Blog\Exceptions;
 
-class InvalidArgumentException
+class InvalidArgumentException extends AppException
 {
 
 }

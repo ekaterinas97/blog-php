@@ -1,6 +1,6 @@
 <?php
 
-namespace Geekbrains\Leveltwo\Blog\Repositories;
+namespace Geekbrains\Leveltwo\Blog\Repositories\UsersRepository;
 
 use Geekbrains\Leveltwo\Blog\Exceptions\UserNotFoundException;
 use Geekbrains\Leveltwo\Blog\User;
