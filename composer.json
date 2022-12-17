@@ -1,0 +1,22 @@
+{
+    "name": "geekbrains/leveltwo",
+    "autoload": {
+        "psr-4": {
+            "Geekbrains\\Leveltwo\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ekaterina Savchenko",
+            "email": "strix1112@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "fakerphp/faker": "^1.21",
+        "roave/security-advisories": "dev-latest"
+    },
+    "require": {
+        "symfony/polyfill-uuid": "^1.27",
+      "ext-pdo": "*"
+    }
+}
