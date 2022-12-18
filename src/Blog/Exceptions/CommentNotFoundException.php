@@ -2,7 +2,7 @@
 
 namespace Geekbrains\Leveltwo\Blog\Exceptions;
 
-class CommentNotFoundException
+class CommentNotFoundException extends AppException
 {
 
 }
