@@ -8,6 +8,7 @@ use Geekbrains\Leveltwo\Blog\Exceptions\UserNotFoundException;
 use Geekbrains\Leveltwo\Blog\Post;
 use Geekbrains\Leveltwo\Blog\Repositories\UsersRepository\SqliteUsersRepository;
 use Geekbrains\Leveltwo\Blog\UUID;
+use mysql_xdevapi\Statement;
 use PDO;
 use PDOStatement;
 
@@ -72,5 +73,13 @@ class SqlitePostsRepository implements PostsRepositoryInterface
             $result['title'],
             $result['text']
         );
+    }
+
+    public function delete(UUID $uuid):void
+    {
+        $statement = $this->connection->prepare(
+            'DELETE FROM posts WHERE posts.uuid=:uuid'
+        );
+        $statement->execute(['uuid' => $uuid]);
     }
 }

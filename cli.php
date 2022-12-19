@@ -1,5 +1,8 @@
 <?php
 
+use Geekbrains\Leveltwo\Blog\Commands\Arguments;
+use Geekbrains\Leveltwo\Blog\Commands\CreateUserCommand;
+use Geekbrains\Leveltwo\Blog\Exceptions\AppException;
 use Geekbrains\Leveltwo\Blog\Exceptions\InvalidArgumentException;
 use Geekbrains\Leveltwo\Blog\Exceptions\UserNotFoundException;
 use Geekbrains\Leveltwo\Blog\Repositories\PostsRepository\SqlitePostsRepository;
@@ -12,6 +15,8 @@ $connection = new PDO('sqlite:' . __DIR__ . '/blog.sqlite');
 
 $usersRepository = new SqliteUsersRepository($connection);
 $postsRepository = new SqlitePostsRepository($connection);
+
+$command = new CreateUserCommand($usersRepository);
 //$postsRepository->save(new Post(
 //    UUID::random(),
 //    new User(UUID::random(), 'user2', new Name('first', 'last')),
@@ -20,6 +25,25 @@ $postsRepository = new SqlitePostsRepository($connection);
 //));
 try {
     echo $usersRepository->getByUsername('user123') . PHP_EOL;
-}catch (InvalidArgumentException | UserNotFoundException  $e) {
+//    $command->handle(Arguments::fromArgv($argv));
+}catch (AppException  $e) {
     echo $e->getMessage();
 }
+
+//print_r($argv);
+//
+//$arr = [];
+//
+//foreach ($argv as $item){
+//   $parts = explode('=', $item);
+//   if(count($parts) !== 2){
+//       continue;
+//   }
+//   $arr[$parts[0]] = $parts[1];
+//}
+//print_r($arr);
+
+$json = '{"foo-bar": 12345}';
+
+$obj = json_decode($json, true);
+print_r($obj);
