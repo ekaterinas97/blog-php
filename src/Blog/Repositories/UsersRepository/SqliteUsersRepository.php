@@ -1,18 +1,21 @@
 <?php
 
-namespace Geekbrains\Leveltwo\Blog\Repositories;
+namespace Geekbrains\Leveltwo\Blog\Repositories\UsersRepository;
 use Geekbrains\Leveltwo\Blog\Exceptions\InvalidArgumentException;
+use Geekbrains\Leveltwo\Blog\Exceptions\UserAlreadyExistsException;
 use Geekbrains\Leveltwo\Blog\Exceptions\UserNotFoundException;
 use Geekbrains\Leveltwo\Blog\User;
 use Geekbrains\Leveltwo\Blog\UUID;
 use Geekbrains\Leveltwo\Person\Name;
 use PDO;
 use PDOStatement;
+use Psr\Log\LoggerInterface;
 
 class SqliteUsersRepository implements UsersRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection,
+        private LoggerInterface $logger
     )
     {
     }
@@ -28,6 +31,8 @@ class SqliteUsersRepository implements UsersRepositoryInterface
             ':first_name' => $user->name()->first(),
             ':last_name' => $user->name()->last()
         ]);
+
+        $this->logger->info("User created: {$user->uuid()}");
     }
 
     /**
@@ -66,9 +71,9 @@ class SqliteUsersRepository implements UsersRepositoryInterface
         $result = $statement->fetch(PDO::FETCH_ASSOC);
 
         if($result === false){
-            throw new UserNotFoundException(
-                "Cannot get user: $username"
-            );
+            $message = "Cannot get user: $username";
+            $this->logger->warning($message);
+            throw new UserNotFoundException($message);
         }
 
         return new User(
@@ -76,5 +81,25 @@ class SqliteUsersRepository implements UsersRepositoryInterface
             $result['username'],
             new Name($result['first_name'], $result['last_name'])
         );
+    }
+
+    /**
+     * @throws UserAlreadyExistsException
+     */
+    public function checkUserAlreadyExists(string $username): void
+    {
+        $statement = $this->connection->prepare(
+            'SELECT * FROM users WHERE username = :username'
+        );
+
+        $statement->execute([':username' => $username]);
+
+        $isExists = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if($isExists){
+            throw new UserAlreadyExistsException(
+                "Username already exists"
+            );
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Geekbrains\Leveltwo\Blog\Exceptions;
 
-class AppException
+class AppException extends \Exception
 {
 
 }

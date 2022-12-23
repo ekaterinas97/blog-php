@@ -2,7 +2,15 @@
 
 namespace Geekbrains\Leveltwo\Blog\Repositories\CommentsRepository;
 
-interface CommetsRepositoryInterface
+use Geekbrains\Leveltwo\Blog\Comment;
+use Geekbrains\Leveltwo\Blog\UUID;
+
+interface CommentsRepositoryInterface
 {
+    public function save(Comment $comment): void;
+
+    public function get(UUID $uuid): Comment;
+
+    public function delete(UUID $uuid): void;
 
 }

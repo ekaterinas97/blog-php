@@ -1,6 +1,6 @@
 <?php
 
-namespace Geekbrains\Leveltwo\Blog\Repositories;
+namespace Geekbrains\Leveltwo\Blog\Repositories\UsersRepository;
 
 use Geekbrains\Leveltwo\Blog\User;
 use Geekbrains\Leveltwo\Blog\UUID;
@@ -12,4 +12,6 @@ interface UsersRepositoryInterface
     public function get(UUID $uuid): User;
 
     public function getByUsername(string $username): User;
+
+    public function checkUserAlreadyExists(string $username): void;
 }

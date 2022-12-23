@@ -2,7 +2,7 @@
 
 namespace Geekbrains\Leveltwo\Blog\Exceptions;
 
-class PostNotFoundException
+class PostNotFoundException extends AppException
 {
 
 }

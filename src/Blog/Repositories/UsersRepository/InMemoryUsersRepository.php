@@ -1,6 +1,6 @@
 <?php
 
-namespace Geekbrains\Leveltwo\Blog\Repositories;
+namespace Geekbrains\Leveltwo\Blog\Repositories\UsersRepository;
 
 use Geekbrains\Leveltwo\Blog\Exceptions\UserNotFoundException;
 use Geekbrains\Leveltwo\Blog\User;
@@ -45,5 +45,9 @@ class InMemoryUsersRepository implements UsersRepositoryInterface
             }
         }
         throw new UserNotFoundException("User not found: $username");
+    }
+    public function checkUserAlreadyExists(string $username): void
+    {
+        // TODO: Implement checkUserAlreadyExists() method.
     }
 }
