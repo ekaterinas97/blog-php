@@ -5,6 +5,11 @@
             "Geekbrains\\Leveltwo\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Geekbrains\\Blog\\UnitTests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Ekaterina Savchenko",
@@ -20,7 +25,9 @@
         "symfony/polyfill-uuid": "^1.27",
       "ext-pdo": "*",
         "ext-mbstring": "*",
-      "ext-http": "*"
+        "psr/container": "^2.0",
+        "monolog/monolog": "^3.2",
+        "vlucas/phpdotenv": "^5.5"
     },
     "scripts": {
         "test": "phpunit tests --testdox --colors"

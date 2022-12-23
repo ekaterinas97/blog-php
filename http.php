@@ -3,16 +3,23 @@
 use Geekbrains\Leveltwo\Blog\Exceptions\AppException;
 use Geekbrains\Leveltwo\Blog\Exceptions\HttpException;
 use Geekbrains\Leveltwo\Blog\Http\Actions\Comments\CreateComment;
+use Geekbrains\Leveltwo\Blog\Http\Actions\Comments\DeleteComment;
+use Geekbrains\Leveltwo\Blog\Http\Actions\Likes\CreateCommentLike;
+use Geekbrains\Leveltwo\Blog\Http\Actions\Likes\CreatePostLike;
 use Geekbrains\Leveltwo\Blog\Http\Actions\Posts\CreatePost;
-use Geekbrains\Leveltwo\Blog\Http\Actions\Posts\DeletePost;
+use Geekbrains\Leveltwo\Blog\Http\Actions\Posts\GetPostByUuid;
+use Geekbrains\Leveltwo\Blog\Http\Actions\Users\CreateUser;
 use Geekbrains\Leveltwo\Blog\Http\Actions\Users\FindByUsername;
 use Geekbrains\Leveltwo\Blog\Http\ErrorResponse;
 use Geekbrains\Leveltwo\Blog\Http\Request;
-use Geekbrains\Leveltwo\Blog\Repositories\CommentsRepository\SqliteCommentsRepository;
-use Geekbrains\Leveltwo\Blog\Repositories\PostsRepository\SqlitePostsRepository;
-use Geekbrains\Leveltwo\Blog\Repositories\UsersRepository\SqliteUsersRepository;
+use Psr\Log\LoggerInterface;
 
-require_once __DIR__ . '/vendor/autoload.php';
+
+// Подключаем файл bootstrap.php
+// и получаем настроенный контейнер
+$container = require __DIR__ . '/bootstrap.php';
+
+$logger = $container->get(LoggerInterface::class);
 
 $connection = new PDO('sqlite:' . __DIR__ . '/blog.sqlite');
 
@@ -22,68 +29,58 @@ $request = new Request(
     file_get_contents('php://input')
 );
 
+// Ассоциируем маршруты с именами классов действий,
+// вместо готовых объектов
 $routes = [
-// Добавили ещё один уровень вложенности
-// для отделения маршрутов,
-// применяемых к запросам с разными методами
     'GET' => [
-        '/users/show' => new FindByUsername(
-            new SqliteUsersRepository($connection)),
+        '/users/show' => FindByUsername::class,
+        '/posts/show' => GetPostByUuid::class
     ],
     'POST' => [
-        '/posts/create' => new CreatePost(
-            new SqliteUsersRepository($connection),
-            new SqlitePostsRepository($connection)
-        ),
-        '/posts/comment' => new CreateComment(
-            new SqliteUsersRepository($connection),
-            new SqlitePostsRepository($connection),
-            new SqliteCommentsRepository($connection)
-        )
+        '/posts/create' => CreatePost::class,
+        '/users/create' => CreateUser::class,
+        '/posts/comment' => CreateComment::class,
+        '/postLikes/create' => CreatePostLike::class,
+        '/commentLikes/create' => CreateCommentLike::class
     ],
     'DELETE' => [
-        '/posts' => new DeletePost(
-            new SqlitePostsRepository($connection)
-        )
+        '/comment' => DeleteComment::class,
     ]
 ];
 
 try {
     $path = $request->path();
-} catch (HttpException) {
+} catch (HttpException $e) {
+    $logger->warning($e->getMessage());
     (new ErrorResponse)->send();
     return;
 }
 try {
-// Пытаемся получить HTTP-метод запроса
     $method = $request->method();
-} catch (HttpException) {
-// Возвращаем неудачный ответ,
-// если по какой-то причине
-// не можем получить метод
+} catch (HttpException $e) {
+    $logger->warning($e->getMessage());
     (new ErrorResponse)->send();
     return;
 }
-// Если у нас нет маршрутов для метода запроса -
-// возвращаем неуспешный ответ
-if (!array_key_exists($method, $routes)) {
-    (new ErrorResponse('Not found'))->send();
+
+if (!array_key_exists($method, $routes) || !array_key_exists($path, $routes[$method])) {
+    $message = "Route not found: $method $path";
+    $logger->notice($message);
+    (new ErrorResponse($message))->send();
     return;
 }
-// Ищем маршрут среди маршрутов для этого метода
-if (!array_key_exists($path, $routes[$method])) {
-    (new ErrorResponse('Not found'))->send();
-    return;
-}
-// Выбираем действие по методу и пути
-$action = $routes[$method][$path];
+// Получаем имя класса действия для маршрута
+$actionClassName = $routes[$method][$path];
+
+// С помощью контейнера
+// создаём объект нужного действия
+$action = $container->get($actionClassName);
 
 try {
     $response = $action->handle($request);
 } catch (AppException $e) {
+    $logger->error($e->getMessage(), ['exception' => $e]);
     (new ErrorResponse($e->getMessage()))->send();
+    return;
 }
-try {
-    $response->send();
-} catch (JsonException $e) {
-}
+$response->send();

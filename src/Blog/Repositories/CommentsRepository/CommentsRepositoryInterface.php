@@ -11,4 +11,6 @@ interface CommentsRepositoryInterface
 
     public function get(UUID $uuid): Comment;
 
+    public function delete(UUID $uuid): void;
+
 }

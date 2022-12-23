@@ -12,11 +12,13 @@ use Geekbrains\Leveltwo\Blog\Repositories\UsersRepository\SqliteUsersRepository;
 use Geekbrains\Leveltwo\Blog\UUID;
 use PDO;
 use PDOStatement;
+use Psr\Log\LoggerInterface;
 
 class SqliteCommentsRepository implements CommentsRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection,
+        private LoggerInterface $logger
     )
     {
     }
@@ -33,6 +35,8 @@ class SqliteCommentsRepository implements CommentsRepositoryInterface
             ':author_uuid' => (string)$comment->author()->uuid(),
             ':text' => $comment->text()
         ]);
+
+        $this->logger->info("Comment created: {$comment->uuid()}");
     }
 
     /**
@@ -61,14 +65,14 @@ class SqliteCommentsRepository implements CommentsRepositoryInterface
         $result = $statement->fetch(PDO::FETCH_ASSOC);
 
         if($result === false){
-            throw new CommentNotFoundException(
-                "Comment not found: $uuid"
-            );
+            $message = "Comment not found: $uuid";
+            $this->logger->warning($message);
+            throw new CommentNotFoundException($message);
         }
-        $postsRepository = new SqlitePostsRepository($this->connection);
+        $postsRepository = new SqlitePostsRepository($this->connection, $this->logger);
         $post = $postsRepository->get(new UUID($result['post_uuid']));
 
-        $usersRepository = new SqliteUsersRepository($this->connection);
+        $usersRepository = new SqliteUsersRepository($this->connection, $this->logger);
         $user = $usersRepository->get(new UUID($result['author_uuid']));
 
         return new Comment(
@@ -77,5 +81,16 @@ class SqliteCommentsRepository implements CommentsRepositoryInterface
             $user,
             $result['text']
         );
+    }
+    public function delete(UUID $uuid): void
+    {
+        $statement = $this->connection->prepare(
+            'DELETE FROM comments WHERE comments.uuid = :uuid'
+        );
+
+        $statement->execute([
+            ':uuid' => (string)$uuid
+        ]);
+
     }
 }

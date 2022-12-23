@@ -3,47 +3,36 @@
 use Geekbrains\Leveltwo\Blog\Commands\Arguments;
 use Geekbrains\Leveltwo\Blog\Commands\CreateUserCommand;
 use Geekbrains\Leveltwo\Blog\Exceptions\AppException;
-use Geekbrains\Leveltwo\Blog\Exceptions\InvalidArgumentException;
-use Geekbrains\Leveltwo\Blog\Exceptions\UserNotFoundException;
-use Geekbrains\Leveltwo\Blog\Repositories\PostsRepository\SqlitePostsRepository;
-use Geekbrains\Leveltwo\Blog\Repositories\UsersRepository\SqliteUsersRepository;
 
-require_once __DIR__ . '/vendor/autoload.php';
+use Geekbrains\Leveltwo\Blog\Likes\PostLike;
+use Geekbrains\Leveltwo\Blog\Repositories\LikesRepository\CommentsLikesRepositoryInterface;
+use Geekbrains\Leveltwo\Blog\Repositories\LikesRepository\PostsLikesRepositoryInterface;
+use Geekbrains\Leveltwo\Blog\Repositories\PostsRepository\PostsRepositoryInterface;
+use Geekbrains\Leveltwo\Blog\Repositories\UsersRepository\UsersRepositoryInterface;
+use Geekbrains\Leveltwo\Blog\UUID;
+use Psr\Log\LoggerInterface;
 
 
-$connection = new PDO('sqlite:' . __DIR__ . '/blog.sqlite');
+// Подключаем файл bootstrap.php
+// и получаем настроенный контейнер
+$container = require __DIR__ . '/bootstrap.php';
 
-$usersRepository = new SqliteUsersRepository($connection);
-$postsRepository = new SqlitePostsRepository($connection);
+$usersRepository = $container->get(UsersRepositoryInterface::class);
 
-$command = new CreateUserCommand($usersRepository);
-//$postsRepository->save(new Post(
-//    UUID::random(),
-//    new User(UUID::random(), 'user2', new Name('first', 'last')),
-//    'Post 1',
-//    'some text about something'
-//));
+$postsRepository = $container->get(PostsRepositoryInterface::class);
+
+$postsLikesRepository = $container->get(PostsLikesRepositoryInterface::class);
+$user = $usersRepository->getByUsername('newUser');
+$post = $postsRepository->get(new UUID('93eb612e-96ab-4df9-85a0-1f216e825d69'));
+$like = new PostLike(UUID::random(), $user, $post);
+
+$commentsLikesRepository = $container->get(CommentsLikesRepositoryInterface::class);
+$logger = $container->get(LoggerInterface::class);
 try {
-    echo $usersRepository->getByUsername('user123') . PHP_EOL;
-//    $command->handle(Arguments::fromArgv($argv));
-}catch (AppException  $e) {
+    $command = $container->get(CreateUserCommand::class);
+    $command->handle(Arguments::fromArgv($argv));
+
+} catch (AppException $e){
+    $logger->error($e->getMessage(), ['exception'=> $e]);
     echo $e->getMessage();
 }
-
-//print_r($argv);
-//
-//$arr = [];
-//
-//foreach ($argv as $item){
-//   $parts = explode('=', $item);
-//   if(count($parts) !== 2){
-//       continue;
-//   }
-//   $arr[$parts[0]] = $parts[1];
-//}
-//print_r($arr);
-
-$json = '{"foo-bar": 12345}';
-
-$obj = json_decode($json, true);
-print_r($obj);

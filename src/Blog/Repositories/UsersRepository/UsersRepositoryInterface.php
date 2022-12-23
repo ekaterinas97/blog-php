@@ -12,4 +12,6 @@ interface UsersRepositoryInterface
     public function get(UUID $uuid): User;
 
     public function getByUsername(string $username): User;
+
+    public function checkUserAlreadyExists(string $username): void;
 }

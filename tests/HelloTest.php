@@ -1,6 +1,6 @@
 <?php
 
-namespace Geekbrains\Leveltwo\Blog\UnitTests;
+namespace Geekbrains\Blog\UnitTests;
 
 use PHPUnit\Framework\TestCase;
 

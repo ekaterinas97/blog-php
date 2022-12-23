@@ -46,4 +46,8 @@ class InMemoryUsersRepository implements UsersRepositoryInterface
         }
         throw new UserNotFoundException("User not found: $username");
     }
+    public function checkUserAlreadyExists(string $username): void
+    {
+        // TODO: Implement checkUserAlreadyExists() method.
+    }
 }

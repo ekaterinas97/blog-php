@@ -1,6 +1,6 @@
 <?php
 
-namespace Geekbrains\Leveltwo\Blog\UnitTests\Commands;
+namespace Geekbrains\Blog\UnitTests\Commands;
 
 class ArgumentsTest
 {

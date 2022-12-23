@@ -17,13 +17,15 @@ use Geekbrains\Leveltwo\Blog\Repositories\CommentsRepository\CommentsRepositoryI
 use Geekbrains\Leveltwo\Blog\Repositories\PostsRepository\PostsRepositoryInterface;
 use Geekbrains\Leveltwo\Blog\Repositories\UsersRepository\UsersRepositoryInterface;
 use Geekbrains\Leveltwo\Blog\UUID;
+use Psr\Log\LoggerInterface;
 
 class CreateComment implements ActionInterface
 {
     public function __construct(
         private UsersRepositoryInterface $usersRepository,
         private PostsRepositoryInterface $postsRepository,
-        private CommentsRepositoryInterface $commentsRepository
+        private CommentsRepositoryInterface $commentsRepository,
+        private LoggerInterface $logger
     )
     {
     }
@@ -58,6 +60,7 @@ class CreateComment implements ActionInterface
         }
 
         $this->commentsRepository->save($comment);
+        $this->logger->info("Comment created: $newCommentUuid");
 
         return new SuccessfulResponse(['uuid' => (string)$newCommentUuid]);
     }
